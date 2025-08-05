@@ -4,46 +4,54 @@ import os
 
 CSV_FILE = "registration_data.csv"
 
+def write_to_csv(data):
+    file_exists = os.path.isfile(CSV_FILE)
+    with open(CSV_FILE, mode='a', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["ชื่อ-สกุล", "เบอร์โทร", "ชื่อทีม"])
+        writer.writerow(data)
+
 def main(page: ft.Page):
     page.title = "แบบฟอร์มการรับสมัคร"
-    page.window_width = 400
-    page.window_height = 400
+    page.window_width = 420
+    page.window_height = 430
 
-    # สร้างช่องกรอกข้อมูล
-    full_name = ft.TextField(label="ชื่อ-สกุล", width=300)
-    phone = ft.TextField(label="หมายเลขโทรศัพท์", width=300)
-    team = ft.TextField(label="ชื่อทีม", width=300)
+    name_field = ft.TextField(label="ชื่อ-สกุล", width=350)
+    phone_field = ft.TextField(label="หมายเลขโทรศัพท์", keyboard_type="number", width=350)
+    team_field = ft.TextField(label="ชื่อทีม", width=350)
 
-    status_text = ft.Text("")
+    status_text = ft.Text("")  # ใช้แสดงผลแทน snack bar ชั่วคราว
 
-    def save_to_csv(e):
-        if not full_name.value or not phone.value or not team.value:
-            status_text.value = "❌ กรุณากรอกข้อมูลให้ครบถ้วน"
+    def handle_submit(e):
+        name = name_field.value.strip()
+        phone = phone_field.value.strip()
+        team = team_field.value.strip()
+
+        if not name or not phone or not team:
+            status_text.value = "❌ กรุณากรอกข้อมูลให้ครบ"
+        elif not phone.isdigit() or len(phone) < 9:
+            status_text.value = "❌ เบอร์โทรต้องเป็นตัวเลข 9 หลักขึ้นไป"
         else:
-            file_exists = os.path.isfile(CSV_FILE)
-            with open(CSV_FILE, mode='a', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file)
-                if not file_exists:
-                    writer.writerow(["ชื่อ-สกุล", "เบอร์โทร", "ชื่อทีม"])
-                writer.writerow([full_name.value, phone.value, team.value])
-            status_text.value = "✅ บันทึกข้อมูลเรียบร้อยแล้ว!"
-            full_name.value = ""
-            phone.value = ""
-            team.value = ""
+            write_to_csv([name, phone, team])
+            status_text.value = "✅ ส่งข้อมูลเรียบร้อยแล้ว!"
+            name_field.value = ""
+            phone_field.value = ""
+            team_field.value = ""
+
         page.update()
 
-    # ปุ่มส่ง
-    submit_btn = ft.ElevatedButton(text="ส่งข้อมูล", on_click=save_to_csv)
+    submit_btn = ft.ElevatedButton("ส่งข้อมูล", icon=ft.Icons.SEND, on_click=handle_submit)
 
-    # แสดงบนหน้าเพจ
     page.add(
         ft.Column([
-            full_name,
-            phone,
-            team,
+            ft.Text("📋 แบบฟอร์มการรับสมัคร", size=22, weight="bold"),
+            name_field,
+            phone_field,
+            team_field,
             submit_btn,
-            status_text
-        ], spacing=10)
+            status_text  # แสดงผลที่นี่
+        ], spacing=15)
     )
 
 ft.app(target=main)
