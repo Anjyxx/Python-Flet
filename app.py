@@ -1,45 +1,64 @@
 import flet as ft
 
 def main(page: ft.Page):
-    page.title = "เครื่องคิดเลข"
+    page.title = "🧮 Calculator"
     page.window_width = 300
-    page.window_height = 400
+    page.window_height = 450
+    page.vertical_alignment = "center"
+    page.horizontal_alignment = "center"
 
-    display = ft.TextField(value="", read_only=True, text_align="right", width=280)
+    # Display box
+    display = ft.TextField(
+        value="",
+        text_align="right",
+        width=250,
+        height=60,
+        read_only=True,
+        border_radius=10,
+        border_color="grey",
+        color="black",
+        text_style=ft.TextStyle(size=24)
+    )
 
+    # Button click handler
     def button_clicked(e):
-        value = e.control.text
-        if value == "=":
+        text = e.control.text
+        if text == "C":
+            display.value = ""
+        elif text == "=":
             try:
                 display.value = str(eval(display.value))
             except:
                 display.value = "Error"
-        elif value == "C":
-            display.value = ""
         else:
-            display.value += value
+            display.value += text
         page.update()
 
-    page.add(display)
-
-    buttons = [
-        ["1", "2", "3", "+"],
-        ["4", "5", "6", "-"],
-        ["7", "8", "9", "*"],
-        ["C", "0", "=", "/"],
+    # Layout of calculator buttons
+    buttons_layout = [
+        ["7", "8", "9", "/"],
+        ["4", "5", "6", "*"],
+        ["1", "2", "3", "-"],
+        ["C", "0", "=", "+"],
     ]
 
-    for row in buttons:
-        row_controls = []
-        for btn_text in row:
-            row_controls.append(
-                ft.ElevatedButton(
-                    text=btn_text,
-                    width=60,
-                    height=60,
-                    on_click=button_clicked
+    # Add display to page
+    page.add(display)
+
+    # Add buttons
+    for row in buttons_layout:
+        btn_row = []
+        for char in row:
+            btn = ft.ElevatedButton(
+                text=char,
+                width=60,
+                height=60,
+                on_click=button_clicked,
+                style=ft.ButtonStyle(
+                    shape=ft.RoundedRectangleBorder(radius=12),
                 )
             )
-        page.add(ft.Row(row_controls, alignment=ft.MainAxisAlignment.CENTER))
+            btn_row.append(btn)
+        page.add(ft.Row(btn_row, alignment="center"))
 
 ft.app(target=main)
